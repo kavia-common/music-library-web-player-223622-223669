@@ -23,7 +23,13 @@ from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Health and any API endpoints from the api app
     path('api/', include('api.urls')),
+    # Music library endpoints expected by the frontend:
+    # - GET /api/tracks
+    # - GET /api/tracks/<id>
+    # - GET /api/stream/<id>
+    path('api/', include('library.urls')),
 ]
 
 schema_view = get_schema_view(

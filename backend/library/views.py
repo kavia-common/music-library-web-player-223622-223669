@@ -34,12 +34,17 @@ def _find_track(track_id: int):
             return t
     return None
 
+"""Views for the music library API providing track listing, details, and streaming."""
+
 # PUBLIC_INTERFACE
 @require_GET
 @csrf_exempt
 def tracks_list(request):
-    """List tracks.
-    Returns JSON array: [{id, title, artist, duration, url}]
+    """List tracks endpoint.
+
+    PUBLIC: GET /api/tracks
+    Returns:
+        JsonResponse: JSON array of tracks [{id, title, artist, duration, url}]
     """
     return JsonResponse(SAMPLE_TRACKS, safe=False)
 
@@ -47,12 +52,18 @@ def tracks_list(request):
 @require_GET
 @csrf_exempt
 def track_detail(request, track_id: int):
-    """Track details by id.
-    Returns JSON: {id, title, artist, duration, url}
+    """Track details by id endpoint.
+
+    PUBLIC: GET /api/tracks/<id>
+    Args:
+        track_id (int): Track identifier
+    Returns:
+        JsonResponse: Track object or 404 JSON error
     """
     t = _find_track(track_id)
     if not t:
-        return HttpResponseNotFound(JsonResponse({"error": "Not found"}))
+        # Return a proper JSON 404 response
+        return JsonResponse({"error": "Not found"}, status=404)
     return JsonResponse(t)
 
 # PUBLIC_INTERFACE
@@ -60,7 +71,14 @@ def track_detail(request, track_id: int):
 @csrf_exempt
 def stream_audio(request, track_id: int):
     """Proxy stream endpoint for a track.
+
+    PUBLIC: GET /api/stream/<id>
     Streams bytes from the remote URL so frontend can use backend origin.
+
+    Args:
+        track_id (int): Track identifier
+    Returns:
+        StreamingHttpResponse: Proxied audio stream with appropriate headers
     """
     t = _find_track(track_id)
     if not t:
@@ -77,6 +95,8 @@ def stream_audio(request, track_id: int):
         # Basic passthrough of length if available
         if upstream.headers.get("Content-Length"):
             resp["Content-Length"] = upstream.headers["Content-Length"]
+        # Hint to clients that range requests are acceptable
+        resp["Accept-Ranges"] = "bytes"
         return resp
     except requests.RequestException:
         return HttpResponseNotFound("Source unavailable")

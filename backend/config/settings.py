@@ -42,10 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Third-party
     'rest_framework',
     'drf_yasg',
     'corsheaders',
-    'api'
+    # Local apps
+    'api',
+    'library',  # Expose track listing and streaming endpoints
 ]
 
 MIDDLEWARE = [
