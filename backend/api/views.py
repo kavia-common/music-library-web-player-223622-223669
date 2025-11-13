@@ -1,6 +1,12 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
-@api_view(['GET'])
+# PUBLIC_INTERFACE
+@require_GET
 def health(request):
-    return Response({"message": "Server is up!"})
+    """Simple health check endpoint.
+
+    Returns:
+        JsonResponse: {"message": "Server is up!"}
+    """
+    return JsonResponse({"message": "Server is up!"})
