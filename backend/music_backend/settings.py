@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+# NOTE: This file remains for backward compatibility.
+# The project is unified under 'config'. Prefer using config.settings.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-not-for-prod")
@@ -15,6 +17,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "rest_framework",
+    "drf_yasg",
+    "api",
     "library",
 ]
 
@@ -29,7 +34,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "music_backend.urls"
+ROOT_URLCONF = "config.urls"  # redirect to unified urls
 
 TEMPLATES = [
     {
@@ -47,7 +52,7 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "music_backend.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = { "default": { "ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3" } }
 
@@ -63,11 +68,10 @@ STATIC_ROOT = BASE_DIR / "static"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# CORS
+# CORS (mirror config.settings)
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    os.environ.get("FRONTEND_URL", "http://localhost:3000")
-]
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
 CORS_ALLOW_CREDENTIALS = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

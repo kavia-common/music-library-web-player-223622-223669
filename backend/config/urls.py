@@ -1,55 +1,41 @@
 """
 URL configuration for config project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+- /api/... serves API endpoints (health, tracks, stream)
+- /docs and /redoc provide API documentation via drf_yasg
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import permissions
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Health and any API endpoints from the api app
+    # API endpoints (health + library)
     path('api/', include('api.urls')),
-    # Music library endpoints expected by the frontend:
-    # - GET /api/tracks
-    # - GET /api/tracks/<id>
-    # - GET /api/stream/<id>
     path('api/', include('library.urls')),
 ]
 
+# Swagger / OpenAPI
 schema_view = get_schema_view(
-   openapi.Info(
-      title="My API",
-      default_version='v1',
-      description="Test description",
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="Ocean Music Player API",
+        default_version='v1',
+        description="API for health, track listing, and streaming",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 def get_full_url(request):
-    scheme = request.scheme
-    host = request.get_host()
-    forwarded_port = request.META.get("HTTP_X_FORWARDED_PORT")
-
+    # Respect X-Forwarded-* headers for correct schema base URL behind proxies
+    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    host = request.headers.get('X-Forwarded-Host', request.get_host())
+    forwarded_port = request.headers.get('X-Forwarded-Port')
     if ':' not in host and forwarded_port:
         host = f"{host}:{forwarded_port}"
-
     return f"{scheme}://{host}"
 
 @csrf_exempt
@@ -57,9 +43,9 @@ def dynamic_schema_view(request, *args, **kwargs):
     url = get_full_url(request)
     view = get_schema_view(
         openapi.Info(
-            title="My API",
+            title="Ocean Music Player API",
             default_version='v1',
-            description="API Docs",
+            description="Interactive API documentation",
         ),
         public=True,
         url=url,
@@ -69,5 +55,5 @@ def dynamic_schema_view(request, *args, **kwargs):
 urlpatterns += [
     re_path(r'^docs/$', dynamic_schema_view, name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    re_path(r'^swagger\.json$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(r'^openapi\.json$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]

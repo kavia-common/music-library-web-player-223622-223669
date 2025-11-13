@@ -4,7 +4,8 @@ import sys
 
 def main():
     """Django's command-line utility for administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'music_backend.settings')
+    # Use the unified 'config' project settings
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

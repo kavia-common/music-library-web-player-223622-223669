@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 
+# NOTE: This file is retained for backward compatibility.
+# The canonical URLConf is config.urls. This mirrors the same routes.
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # Health and additional API endpoints
     path("api/", include("api.urls")),
-    # Music library endpoints
     path("api/", include("library.urls")),
 ]
